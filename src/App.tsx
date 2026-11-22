@@ -7,10 +7,14 @@ import { PresetsModal } from './components/PresetsModal';
 import { AIHeadlineModal } from './components/AIHeadlineModal';
 import { ClipsTab } from './components/ClipsTab';
 import { HistoryTab } from './components/HistoryTab';
+import { LoginModal } from './components/LoginModal';
 import { TEMPLATE_PRESETS } from './presets';
 import { TemplateConfig, VideoItem } from './types';
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    () => localStorage.getItem('reelsframe_auth') === 'true'
+  );
   const [currentTab, setCurrentTab] = useState<'editor' | 'clips' | 'history'>('editor');
   const [config, setConfig] = useState<TemplateConfig>({
     ...(TEMPLATE_PRESETS[0].config as TemplateConfig),
@@ -35,6 +39,11 @@ export default function App() {
 
   const handleUpdateConfig = (newConfig: Partial<TemplateConfig>) => {
     setConfig((prev) => ({ ...prev, ...newConfig }));
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('reelsframe_auth');
+    setIsAuthenticated(false);
   };
 
   const handleAddVideo = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,12 +87,17 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-['Inter',sans-serif] overflow-hidden">
+      {!isAuthenticated && (
+        <LoginModal onLoginSuccess={() => setIsAuthenticated(true)} />
+      )}
+
       <Navbar
         currentTab={currentTab}
         onTabChange={(tab) => setCurrentTab(tab)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenPresets={() => setIsPresetsOpen(true)}
         onOpenAI={() => setIsAIOpen(true)}
+        onLogout={handleLogout}
       />
 
       {currentTab === 'editor' && (
