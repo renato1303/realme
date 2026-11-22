@@ -1,0 +1,6 @@
+{
+  "name": "ReelsFrame Studio",
+  "description": "Crie templates profissionais para seus vídeos de Reels e TikTok com fundo branco, foto de perfil, arroba e headline editável.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
