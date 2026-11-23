@@ -266,7 +266,7 @@ function ClipsTabContent({ onAddVideo, onSetHeadline, config }: ClipsTabProps) {
     const endSec = parseTimeString(endTimeInput) || dur;
     const validStart = Math.max(0, Math.min(startSec, dur));
     const validEnd = Math.max(validStart + 1, Math.min(endSec, dur));
-    const BLOCK_SIZE = 1800;
+    const BLOCK_SIZE = 600;
     const OVERLAP = 60;
     let count = 0;
     let cursor = validStart;
@@ -310,7 +310,7 @@ function ClipsTabContent({ onAddVideo, onSetHeadline, config }: ClipsTabProps) {
       startSec = Math.max(0, Math.min(startSec, dur));
       endSec = Math.max(startSec + 5, Math.min(endSec, dur));
 
-      const BLOCK_SIZE = 1800;
+      const BLOCK_SIZE = 600;
       const OVERLAP = 60;
       const taskList: BlockTask[] = [];
 
@@ -392,7 +392,7 @@ function ClipsTabContent({ onAddVideo, onSetHeadline, config }: ClipsTabProps) {
       const blockAudioBlob = await getOrExtractAudio(start, end, taskIndex, depth);
       const audioSizeMB = blockAudioBlob.size / (1024 * 1024);
 
-      if (audioSizeMB > 12 && depth < 3) {
+      if (audioSizeMB > 3.8 && depth < 3) {
         const mid = start + (end - start) / 2;
         const clipsPart1 = await processBlockRange(start, mid, taskIndex, depth + 1);
         const clipsPart2 = await processBlockRange(mid, end, taskIndex, depth + 1);

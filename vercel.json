@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "functions": {
+    "api/analyze-video.ts": { "maxDuration": 300 },
+    "api/transcribe-clip.ts": { "maxDuration": 300 }
+  }
+}
