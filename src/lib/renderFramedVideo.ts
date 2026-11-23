@@ -204,12 +204,13 @@ function buildStaticLayer(
 export interface RenderOptions {
   onProgress?: (percent: number) => void;
   signal?: AbortSignal;
+  trim?: { start: number; end: number };
 }
 
 export async function renderFramedVideo(
   file: Blob,
   config: TemplateConfig,
-  { onProgress, signal }: RenderOptions = {}
+  { onProgress, signal, trim }: RenderOptions = {}
 ): Promise<Blob> {
   const { width, height } = getOutputSize(config);
   const L = getLayout(config, width, height);
@@ -227,6 +228,7 @@ export async function renderFramedVideo(
   const conversion = await Conversion.init({
     input,
     output,
+    ...(trim ? { trim: { start: trim.start, end: trim.end } } : {}),
     video: {
       codec: 'avc',
       quality: QUALITY_HIGH,

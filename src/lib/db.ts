@@ -22,7 +22,9 @@ export interface ExportHistoryItem {
 const DB_NAME = 'ReelsFrameStudioDB';
 const ANALYSES_STORE = 'analyses';
 const EXPORTS_STORE = 'exports';
-const DB_VERSION = 2;
+const CLIPS_STORE = 'clips';
+const TRANSCRIPTS_STORE = 'transcripts';
+const DB_VERSION = 4;
 
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -36,6 +38,12 @@ export function openDB(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(EXPORTS_STORE)) {
         db.createObjectStore(EXPORTS_STORE, { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains(CLIPS_STORE)) {
+        db.createObjectStore(CLIPS_STORE, { keyPath: 'clipId' });
+      }
+      if (!db.objectStoreNames.contains(TRANSCRIPTS_STORE)) {
+        db.createObjectStore(TRANSCRIPTS_STORE, { keyPath: 'cacheKey' });
       }
     };
   });
@@ -85,6 +93,31 @@ export async function clearAnalysisState(fileKey: string): Promise<void> {
   });
 }
 
+export async function saveRenderedClipBlob(clipId: string, blob: Blob): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(CLIPS_STORE, 'readwrite');
+    const store = transaction.objectStore(CLIPS_STORE);
+    const request = store.put({ clipId, blob, timestamp: Date.now() });
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+}
+
+export async function loadRenderedClipBlob(clipId: string): Promise<Blob | null> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(CLIPS_STORE, 'readonly');
+    const store = transaction.objectStore(CLIPS_STORE);
+    const request = store.get(clipId);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const res = request.result;
+      resolve(res ? res.blob : null);
+    };
+  });
+}
+
 export async function saveExportHistory(item: ExportHistoryItem): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -125,3 +158,29 @@ export async function clearExportHistory(): Promise<void> {
 export function getFileKey(file: File): string {
   return `${file.name}_${file.size}_${file.lastModified}`;
 }
+
+export async function saveTranscriptCache(cacheKey: string, data: { words: any[]; text: string; start: number; end: number }): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(TRANSCRIPTS_STORE, 'readwrite');
+    const store = transaction.objectStore(TRANSCRIPTS_STORE);
+    const request = store.put({ cacheKey, data, timestamp: Date.now() });
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+}
+
+export async function loadTranscriptCache(cacheKey: string): Promise<{ words: any[]; text: string; start: number; end: number; failed?: boolean } | null> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(TRANSCRIPTS_STORE, 'readonly');
+    const store = transaction.objectStore(TRANSCRIPTS_STORE);
+    const request = store.get(cacheKey);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const res = request.result;
+      resolve(res ? res.data : null);
+    };
+  });
+}
+
